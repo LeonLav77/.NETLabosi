@@ -1,22 +1,107 @@
 ﻿@{
-    ViewData["Title"] = "Contact page";
+    ViewData["Title"] = "Contact";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Podaci koji su proslijeđeni iz controller-a: @ViewData["Message"]</p>
+<!-- Breadcrumbs for Task 2.6 -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Kontakt</li>
+    </ol>
+</nav>
 
-<table>
-    <tr>
-        <th>Broj</th>
-        <th>Kvadrat</th>
-    </tr>
-    @foreach(var i in Enumerable.Range(1,10))
-    {
-        <tr>
-            <td>@i</td>
-            <td>@{
-                    Write($"{i * i}");    
-                }</td>
-        </tr>
-    }
-</table>
+<h2>Contact.</h2>
+<p>Jednostavan način prosljeđivanja poruke iz Controller -> View.</p>
+
+<!-- Button to trigger modal -->
+<button type="button" id="modal-toggle-button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#contactModal">
+    Kontaktirajte nas!
+</button>
+
+<!-- Contact information cards -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Adresa sjedišta</h5>
+                <p class="card-text">
+                    One Microsoft Way<br>
+                    Redmond, WA 98052-6399<br>
+                    P: 425.555.0100
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Javite nam se!</h5>
+                <p class="card-text">
+                    <strong>Support:</strong> <a href="mailto:Support@example.com">Support@example.com</a><br>
+                    <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <p class="text-muted">© 2016 - My ASP.NET Application</p>
+</div>
+
+<!-- Modal dialog with contact form -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contactModalLabel">Kontakt forma</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/Home/SubmitQuery">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="ime" class="form-label">Ime</label>
+                            <input type="text" class="form-control" id="ime" name="ime" placeholder="Unesite ime">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="prezime" class="form-label">Prezime</label>
+                            <input type="text" class="form-control" id="prezime" name="prezime" placeholder="Unesite prezime">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Unesite email">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="poruka" class="form-label">Poruka</label>
+                        <textarea class="form-control" id="poruka" name="poruka" rows="4" placeholder="Unesite vašu poruku"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tipUpita" class="form-label">Tip upita</label>
+                        <select class="form-control" id="tipUpita" name="tipPoruke">
+                            <option value="Pohvala">Pohvala</option>
+                            <option value="Upit" selected>Upit</option>
+                            <option value="Poslovni prijedlog">Poslovni prijedlog</option>
+                            <option value="Žalba">Žalba</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter" value="true">
+                        <label class="form-check-label" for="newsletter">Želim primati newsletter</label>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Otkazi</button>
+                        <button type="submit" class="btn btn-primary">Pošalji upit!</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

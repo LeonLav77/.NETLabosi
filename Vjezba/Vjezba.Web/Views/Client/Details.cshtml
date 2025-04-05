@@ -1,0 +1,53 @@
+@model Vjezba.Web.Mock.Client
+@{
+    ViewData["Title"] = "Details";
+}
+
+<!-- Breadcrumb navigation -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Client" asp-action="Index">Popis klijenata</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@(Model?.FullName ?? "Details")</li>
+    </ol>
+</nav>
+
+<h1>Details</h1>
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-warning" role="alert">
+        @ViewBag.ErrorMessage
+    </div>
+    <a asp-action="Index" class="btn btn-primary">Popis klijenata</a>
+}
+else
+{
+    <h2>Client</h2>
+    <hr />
+
+    <dl class="row">
+        <dt class="col-sm-2">ID</dt>
+        <dd class="col-sm-10">@Model.ID</dd>
+
+        <dt class="col-sm-2">Ime i prezime</dt>
+        <dd class="col-sm-10">@Model.FullName</dd>
+
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">Spol</dt>
+        <dd class="col-sm-10">@Model.Gender</dd>
+
+        <dt class="col-sm-2">Adresa</dt>
+        <dd class="col-sm-10">@(string.IsNullOrEmpty(Model.Address) ? "-" : Model.Address)</dd>
+
+        <dt class="col-sm-2">Tel.</dt>
+        <dd class="col-sm-10">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "-" : Model.PhoneNumber)</dd>
+
+        <dt class="col-sm-2">Grad</dt>
+        <dd class="col-sm-10">@(Model.City?.Name ?? "-")</dd>
+    </dl>
+
+    <a asp-action="Index" class="btn btn-primary">Popis klijenata</a>
+}

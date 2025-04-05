@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "FAQ";
+    var questionsAndAnswers = ViewBag.QuestionsAndAnswers as Dictionary<int, (string question, string answer)>;
+}
+
+<h1>Frequently Asked Questions</h1>
+
+<div class="faq-container">
+    @foreach (var item in questionsAndAnswers)
+    {
+        <div id="question@(item.Key)" class="faq-item @(ViewBag.SelectedQuestion == item.Key ? "selected" : "")">
+            <h3 @(ViewBag.SelectedQuestion == item.Key ? "style=font-weight:bold" : "")>@item.Value.question</h3>
+            <p>@item.Value.answer</p>
+        </div>
+    }
+</div>
+
+<style>
+    .faq-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .faq-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .faq-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .faq-item.selected {
+        background-color: #f8f9fa;
+        border-color: #007bff;
+        box-shadow: 0 0 10px rgba(0,123,255,0.2);
+    }
+    
+    h3 {
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+</style>

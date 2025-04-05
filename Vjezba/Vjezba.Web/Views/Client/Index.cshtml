@@ -1,0 +1,128 @@
+@model List<Vjezba.Web.Mock.Client>
+@{
+    ViewData["Title"] = "Klijenti";
+}
+
+<h1>Klijenti</h1>
+
+<div class="alert alert-info mb-4" role="alert">
+    U sustavu postoji @Model.Count klijenata.
+</div>
+
+<!-- Tab navigation -->
+<ul class="nav nav-tabs mb-3" id="searchTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(ViewBag.ActiveTab == "tab1" || ViewBag.ActiveTab == null ? "active" : "")" 
+                id="get-tab" data-bs-toggle="tab" data-bs-target="#get-search" 
+                type="button" role="tab" aria-controls="get-search" aria-selected="true">
+            Zadatak 5.5
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(ViewBag.ActiveTab == "tab2" ? "active" : "")" 
+                id="post-tab" data-bs-toggle="tab" data-bs-target="#post-search" 
+                type="button" role="tab" aria-controls="post-search" aria-selected="false">
+            Zadatak 5.6
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(ViewBag.ActiveTab == "tab3" ? "active" : "")" 
+                id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced-search" 
+                type="button" role="tab" aria-controls="advanced-search" aria-selected="false">
+            Zadatak 5.7
+        </button>
+    </li>
+</ul>
+
+<!-- Tab content -->
+<div class="tab-content" id="searchTabContent">
+    <!-- GET Search Tab -->
+    <div class="tab-pane fade @(ViewBag.ActiveTab == "tab1" || ViewBag.ActiveTab == null ? "show active" : "")" 
+         id="get-search" role="tabpanel" aria-labelledby="get-tab">
+        <h5>Zadatak 5.5 - GET forma s jednim parametrom</h5>
+        <form method="GET" action="/Client/Index" class="mb-3">
+            <div class="row g-2">
+                <div class="col-auto">
+                    <input type="text" name="query" class="form-control" placeholder="Search..." value="@ViewBag.CurrentQuery">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-secondary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- POST Search Tab -->
+    <div class="tab-pane fade @(ViewBag.ActiveTab == "tab2" ? "show active" : "")" 
+         id="post-search" role="tabpanel" aria-labelledby="post-tab">
+        <h5>Zadatak 5.6 - POST forma s dva parametra</h5>
+        <form method="POST" action="/Client/Index" class="mb-3">
+            <div class="row g-2">
+                <div class="col-auto">
+                    <input type="text" name="queryName" class="form-control" placeholder="Pretraga po imenu" value="@ViewBag.CurrentQueryName">
+                </div>
+                <div class="col-auto">
+                    <input type="text" name="queryAddress" class="form-control" placeholder="Pretraga po adresi" value="@ViewBag.CurrentQueryAddress">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-secondary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Advanced Search Tab -->
+    <div class="tab-pane fade @(ViewBag.ActiveTab == "tab3" ? "show active" : "")" 
+         id="advanced-search" role="tabpanel" aria-labelledby="advanced-tab">
+        <h5>Zadatak 5.7 - POST forma, binding na model</h5>
+        <form method="POST" action="/Client/AdvancedSearch" class="mb-3">
+            <div class="row g-2">
+                <div class="col-md">
+                    <input type="text" name="ClientName" class="form-control" placeholder="Pretraga po imenu" value="@ViewBag.AdvancedFilter?.ClientName">
+                </div>
+                <div class="col-md">
+                    <input type="text" name="Address" class="form-control" placeholder="Pretraga po adresi" value="@ViewBag.AdvancedFilter?.Address">
+                </div>
+                <div class="col-md">
+                    <input type="text" name="Email" class="form-control" placeholder="Pretraga po e-mailu" value="@ViewBag.AdvancedFilter?.Email">
+                </div>
+                <div class="col-md">
+                    <input type="text" name="City" class="form-control" placeholder="Pretraga po gradu" value="@ViewBag.AdvancedFilter?.City">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-secondary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Address</th>
+                <th>Email</th>
+                <th>City</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var client in Model)
+            {
+                <tr>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@client.ID">@client.FullName</a>
+                    </td>
+                    <td>@(string.IsNullOrEmpty(client.Address) ? "-" : client.Address)</td>
+                    <td>@client.Email</td>
+                    <td>@(client.City?.Name ?? "-")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-4">
+    <p class="text-muted">© 2019 - Vjezba.Web</p>
+</div>

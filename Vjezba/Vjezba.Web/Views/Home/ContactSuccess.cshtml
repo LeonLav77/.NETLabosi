@@ -3,19 +3,17 @@
     ViewData["Title"] = "Poruka poslana";
 }
 
-<!-- Breadcrumbs for Task 2.6 -->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Url.Action("Home", "Home")">Home</a></li>
-        <li class="breadcrumb-item"><a href="@Url.Action("FAQ", "Contact")">Kontakt</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Contact", "Home")">Kontakt</a></li>
         <li class="breadcrumb-item active" aria-current="page">Poruka poslana</li>
     </ol>
 </nav>
 
 <h2>Poruka uspješno poslana!</h2>
 
-<!-- Alert for displaying the message -->
-<div class="alert alert-success mt-3" role="alert">
+ <div class="alert alert-success mt-3" role="alert">
     @Model
 </div>
 

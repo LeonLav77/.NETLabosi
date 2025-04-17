@@ -1,7 +1,8 @@
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Vjezba.DAL;
 using Vjezba.Model;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,20 @@ builder.Services.AddDbContext<ClientManagerDbContext>(options =>
         builder.Configuration.GetConnectionString("ClientManagerDbContext"),
         opt => opt.MigrationsAssembly("Vjezba.DAL")));
 
+// Configure supported cultures and localization options
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("hr-HR")
+    };
+    
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,6 +38,9 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+// Add request localization middleware
+app.UseRequestLocalization();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

@@ -1,0 +1,223 @@
+@using Vjezba.Model
+@model Client
+
+@{
+    ViewData["Title"] = "Edit Client";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Clients</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Client</li>
+    </ol>
+</nav>
+
+<h2>Edit Client</h2>
+
+<!-- Add simple jQuery UI for autocomplete instead of Mapbox -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<style>
+    .ui-autocomplete {
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        z-index: 9999 !important;
+    }
+    
+    .ui-menu-item {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+    
+    .ui-menu-item:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    #address-loading {
+        display: none;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    .address-container {
+        position: relative;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <form asp-controller="Client" asp-action="Edit" method="post" id="editForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <input type="hidden" asp-for="ID" />
+            
+            <partial name="_CreateOrEdit" model="Model" />
+            
+            <div class="row">
+                <div class="col">
+                    <button type="submit" class="btn btn-primary" id="saveButton">Save</button>
+                    <a asp-action="Index" class="btn btn-secondary" id="cancelButton">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Add jQuery UI for autocomplete -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Find the address input field
+            var addressInput = $("input[name='Address']");
+            var addressContainer = addressInput.closest('.form-group');
+            
+            // Add a loading indicator
+            addressContainer.addClass('address-container');
+            addressContainer.append('<span id="address-loading">Loading suggestions...</span>');
+            
+            // Check if we're in Croatia to determine the best API endpoint
+            function getCountryCodeFromAddress(address) {
+                // Default to Croatia if no specific country is detected
+                if (!address || address.toLowerCase().indexOf('croatia') > -1) {
+                    return 'hr';
+                }
+                // Try to extract country from address
+                var countryMatches = {
+                    'slovenia': 'si',
+                    'italy': 'it',
+                    'austria': 'at',
+                    'hungary': 'hu',
+                    'bosnia': 'ba',
+                    'montenegro': 'me',
+                    'serbia': 'rs'
+                };
+                
+                for (var country in countryMatches) {
+                    if (address.toLowerCase().indexOf(country) > -1) {
+                        return countryMatches[country];
+                    }
+                }
+                
+                return 'hr'; // default to Croatia
+            }
+            
+            // Initialize autocomplete with error handling
+            addressInput.autocomplete({
+                minLength: 3,
+                delay: 500,
+                source: function(request, response) {
+                    var term = request.term;
+                    $('#address-loading').show();
+                    
+                    // Determine country for better suggestions
+                    var countryCode = getCountryCodeFromAddress(term);
+                    
+                    // Build OSM Nominatim API URL (free, no token required)
+                    var nominatimUrl = 'https://nominatim.openstreetmap.org/search';
+                    
+                    // Use jQuery AJAX with error handling
+                    $.ajax({
+                        url: nominatimUrl,
+                        dataType: 'json',
+                        data: {
+                            q: term,
+                            format: 'json',
+                            addressdetails: 1,
+                            limit: 10,
+                            countrycodes: countryCode
+                        },
+                        success: function(data) {
+                            $('#address-loading').hide();
+                            
+                            if (data && data.length > 0) {
+                                response($.map(data, function(item) {
+                                    return {
+                                        label: item.display_name,
+                                        value: item.display_name,
+                                        data: item
+                                    };
+                                }));
+                            } else {
+                                return response([]);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error in address autocomplete: " + error);
+                            $('#address-loading').hide();
+                            response([]);
+                        }
+                    });
+                },
+                select: function(event, ui) {
+                    // When an address is selected, try to extract city
+                    var address = ui.item.value;
+                    
+                    // Basic city extraction - look for common Croatian cities
+                    var cities = {
+                        'Zagreb': ['Zagreb', 'Zagreba'],
+                        'Split': ['Split', 'Splita'],
+                        'Rijeka': ['Rijeka', 'Rijeke'],
+                        'Osijek': ['Osijek', 'Osijeka'],
+                        'Zadar': ['Zadar', 'Zadra'],
+                        'Pula': ['Pula', 'Pule'],
+                        'Slavonski Brod': ['Slavonski Brod', 'Slavonskom Brodu'],
+                        'Dubrovnik': ['Dubrovnik', 'Dubrovnika']
+                    };
+                    
+                    // Try to auto-select city based on address
+                    for (var cityId in cities) {
+                        var cityVariants = cities[cityId];
+                        for (var i = 0; i < cityVariants.length; i++) {
+                            if (address.indexOf(cityVariants[i]) > -1) {
+                                // Find the city in the dropdown and select it if available
+                                $("#CityID option").each(function() {
+                                    if ($(this).text() === cityId) {
+                                        $("#CityID").val($(this).val());
+                                        return false;
+                                    }
+                                });
+                                break;
+                            }
+                        }
+                    }
+                    
+                    return true;
+                }
+            });
+            
+            // Add dirty form detection
+            var formIsDirty = false;
+            var isSubmitting = false;
+            
+            // When any input, select, or textarea changes
+            $("form :input").on("change input", function() {
+                formIsDirty = true;
+            });
+            
+            // Set the isSubmitting flag when the form is submitted
+            $("#saveButton").click(function() {
+                isSubmitting = true;
+            });
+            
+            // Also set the flag when the form is submitted via Enter key
+            $("#editForm").on("submit", function() {
+                isSubmitting = true;
+            });
+            
+            // Warning when navigating away with unsaved changes
+            window.addEventListener("beforeunload", function(e) {
+                // Only show warning if form is dirty AND NOT being submitted
+                if (formIsDirty && !isSubmitting) {
+                    var confirmationMessage = "You have unsaved changes. Are you sure you want to leave this page?";
+                    (e || window.event).returnValue = confirmationMessage;
+                    return confirmationMessage;
+                }
+            });
+        });
+    </script>
+}

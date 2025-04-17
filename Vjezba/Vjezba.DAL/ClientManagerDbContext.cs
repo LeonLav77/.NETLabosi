@@ -37,7 +37,8 @@ namespace Vjezba.DAL
                     Gender = 'M',
                     Address = "Ilica 1",
                     PhoneNumber = "0912345678",
-                    CityID = 2
+                    CityID = 2,
+                    WorkingExperience = 5
                 }
             );
         }

@@ -8,6 +8,11 @@
     .tab-pane {
         padding: 20px;
     }
+    
+    /* Style for bold text */
+    .bold-text {
+        font-weight: bold;
+    }
 </style>
 
 <div style="margin-top: 20px;">
@@ -122,23 +127,56 @@
 <table class="table table-striped mt-3">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Client</th>
             <th>Address</th>
             <th>Email</th>
             <th>City</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model.OrderBy(c => c.ID))
         {
             <tr>
+                <td>@item.ID</td>
                 <td>
                     <a asp-action="Details" asp-route-id="@item.ID">@item.FullName</a>
                 </td>
                 <td>@item.Address</td>
                 <td>@item.Email</td>
                 <td>@item.City?.Name</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-sm btn-primary">Edit</a>
+                </td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 1. Set initial opacity of all table rows to 0.5
+            $('table tbody tr').css('opacity', '0.5');
+            
+            // 2. Change opacity on hover
+            $('table tbody tr').hover(
+                function() {
+                    // Mouse over - set opacity to 1.0
+                    $(this).css('opacity', '1.0');
+                },
+                function() {
+                    // Mouse out - set opacity back to 0.5
+                    $(this).css('opacity', '0.5');
+                }
+            );
+            
+            // 3. Toggle bold text on cell click
+            $('table tbody td').click(function() {
+                // Toggle bold class on the entire row
+                $(this).parent('tr').toggleClass('bold-text');
+            });
+        });
+    </script>
+}

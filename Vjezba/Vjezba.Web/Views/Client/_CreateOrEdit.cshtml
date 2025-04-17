@@ -1,0 +1,211 @@
+@model Vjezba.Model.Client
+@using System.Globalization
+
+@{
+    // Get culture information for display and formatting
+    var currentCulture = CultureInfo.CurrentCulture;
+    var currentUICulture = CultureInfo.CurrentUICulture;
+    var dateFormatInfo = currentCulture.DateTimeFormat;
+    
+    // Get specific date format patterns
+    var shortDatePattern = dateFormatInfo.ShortDatePattern;
+    var longDatePattern = dateFormatInfo.LongDatePattern;
+}
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="FirstName" class="control-label"></label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="LastName" class="control-label"></label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="Email" class="control-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="PhoneNumber" class="control-label"></label>
+            <input asp-for="PhoneNumber" class="form-control" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="Address" class="control-label"></label>
+            <input asp-for="Address" class="form-control" autocomplete="off" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="CityID" class="control-label"></label>
+            <select asp-for="CityID" class="form-select">
+                <option value="">-- Select City --</option>
+                @foreach (var city in ViewBag.Cities)
+                {
+                    <option value="@city.ID">@city.Name</option>
+                }
+            </select>
+            <span asp-validation-for="CityID" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="Gender" class="control-label"></label>
+            <select asp-for="Gender" class="form-select">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+            </select>
+            <span asp-validation-for="Gender" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="DateOfBirth" class="control-label"></label>
+            <div class="input-group date" id="datepicker">
+                <input asp-for="DateOfBirth" class="form-control" autocomplete="off" />
+                <span class="input-group-append">
+                    <span class="input-group-text bg-light d-block">
+                        <i class="fa fa-calendar"></i>
+                    </span>
+                </span>
+            </div>
+            <small class="form-text text-muted">Format: @shortDatePattern</small>
+            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="WorkingExperience" class="control-label"></label>
+            <input asp-for="WorkingExperience" class="form-control" />
+            <span asp-validation-for="WorkingExperience" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>Today's Date (Formatted)</label>
+            <input type="text" class="form-control" readonly value="@DateTime.Now.ToString(shortDatePattern)" />
+            <small class="form-text text-muted">Using culture: @currentCulture.DisplayName</small>
+        </div>
+    </div>
+</div>
+
+<!-- Culture Information Display Section -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <strong>Culture Information</strong>
+            </div>
+            <div class="card-body">
+                <div class="mb-2"><strong>Current Culture:</strong> @currentCulture.Name (@currentCulture.DisplayName)</div>
+                <div class="mb-2"><strong>UI Culture:</strong> @currentUICulture.Name (@currentUICulture.DisplayName)</div>
+                <div class="mb-2"><strong>Date Separator:</strong> "@dateFormatInfo.DateSeparator"</div>
+                <div class="mb-2"><strong>Short Date Pattern:</strong> @shortDatePattern</div>
+                <div class="mb-2"><strong>Long Date Pattern:</strong> @longDatePattern</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <strong>Date Formatting Example</strong>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Current DateTime:</strong> @DateTime.Now
+                </div>
+                <div class="mb-2">
+                    <strong>Short Format:</strong> @DateTime.Now.ToString("d", currentCulture)
+                </div>
+                <div class="mb-2">
+                    <strong>Long Format:</strong> @DateTime.Now.ToString("D", currentCulture)
+                </div>
+                <div class="mb-2">
+                    <strong>Month/Year:</strong> @DateTime.Now.ToString("y", currentCulture)
+                </div>
+                <div class="mb-2">
+                    <strong>Custom (MM/dd/yyyy):</strong> @DateTime.Now.ToString("MM/dd/yyyy", currentCulture)
+                </div>
+                <div class="mb-2">
+                    <strong>Custom (dd.MM.yyyy):</strong> @DateTime.Now.ToString("dd.MM.yyyy", currentCulture)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function(){
+            // Get current culture information
+            var currentCulture = '@currentCulture.Name';
+            var shortDatePattern = '@shortDatePattern';
+            
+            // Convert .NET date format to Bootstrap Datepicker format
+            function convertToDatepickerFormat(pattern) {
+                // Replace .NET patterns with datepicker patterns
+                return pattern
+                    .replace(/M{4}/g, 'MM')    // Full month name -> abbreviated month name
+                    .replace(/M{3}/g, 'M')     // Abbreviated month name -> abbreviated month name
+                    .replace(/M{2}/g, 'mm')    // Two-digit month -> two-digit month
+                    .replace(/M{1}/g, 'm')     // Single-digit month -> single-digit month
+                    .replace(/d{4}/g, 'DD')    // Full day name -> abbreviated day name
+                    .replace(/d{3}/g, 'D')     // Abbreviated day name -> abbreviated day name
+                    .replace(/d{2}/g, 'dd')    // Two-digit day -> two-digit day
+                    .replace(/d{1}/g, 'd')     // Single-digit day -> single-digit day
+                    .replace(/yyyy/g, 'yyyy')  // Four-digit year -> four-digit year
+                    .replace(/yy/g, 'yy');     // Two-digit year -> two-digit year
+            }
+            
+            // Get datepicker format based on culture pattern
+            var datepickerFormat = convertToDatepickerFormat(shortDatePattern);
+            
+            // Fallback to standard formats if conversion fails
+            if (!datepickerFormat) {
+                datepickerFormat = currentCulture.toLowerCase().startsWith('hr') ? 'dd.mm.yyyy' : 'mm/dd/yyyy';
+            }
+            
+            // Initialize datepicker with appropriate format
+            $('#datepicker').datepicker({
+                format: datepickerFormat,
+                autoclose: true,
+                todayHighlight: true,
+                clearBtn: true,
+                language: currentCulture.substring(0, 2), // Extract language code (hr or en)
+                // Show today's date as default if no date is selected
+                todayBtn: 'linked'
+            });
+            
+            // Log format information to console for debugging
+            console.log("Current culture: " + currentCulture);
+            console.log(".NET date format: " + shortDatePattern);
+            console.log("Datepicker format: " + datepickerFormat);
+        });
+    </script>
+}

@@ -1,21 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
-using Vjezba.Web.Models;
+using Vjezba.DAL;
 using Vjezba.Model;
-using Vjezba.DAL; // Namespace for DbContext
+using Vjezba.Web.Models;
+using Vjezba.Model.Helpers;
 
 namespace Vjezba.Web.Controllers
 {
     public class ClientController : Controller
     {
-        // Add database context with the correct class
         private readonly ClientManagerDbContext _context;
 
-        // Constructor with dependency injection
         public ClientController(ClientManagerDbContext context)
         {
             _context = context;
@@ -37,7 +36,7 @@ namespace Vjezba.Web.Controllers
 
             ViewBag.ActiveTab = 1;
             
-            return View(clientsInMemory.ToList());
+            return View(clientsInMemory.OrderBy(c => c.ID).ToList());
         }
 
         [HttpPost]
@@ -58,7 +57,7 @@ namespace Vjezba.Web.Controllers
 
             ViewBag.ActiveTab = 2;
 
-            return View(clientsInMemory.ToList());
+            return View(clientsInMemory.OrderBy(c => c.ID).ToList());
         }
 
         [HttpPost]
@@ -88,7 +87,7 @@ namespace Vjezba.Web.Controllers
 
             ViewBag.Filter = filter;
 
-            return View("Index", clientsInMemory.ToList());
+            return View("Index", clientsInMemory.OrderBy(c => c.ID).ToList());
         }
 
         public IActionResult Details(int? id = null)
@@ -108,60 +107,75 @@ namespace Vjezba.Web.Controllers
 
         public IActionResult Create()
         {
-            // Get cities from database for dropdown
-            ViewBag.Cities = _context.Cities.ToList();
+            // Fill dropdown values
+            FillDropDownValues();
             return View(new Client());
         }
 
         [HttpPost]
         public IActionResult Create(Client client)
         {
-            // Check if model is valid and handle required fields
-            if (string.IsNullOrEmpty(client.FirstName))
-            {
-                ModelState.AddModelError("FirstName", "First Name is required");
-            }
-            
-            if (string.IsNullOrEmpty(client.LastName))
-            {
-                ModelState.AddModelError("LastName", "Last Name is required");
-            }
-
-            // Set default Gender if not provided
-            if (client.Gender == '\0')
-            {
-                client.Gender = 'M'; // Default to 'M' or whatever default makes sense for your app
-            }
-            
-            if (!ModelState.IsValid)
-            {
-                // If validation fails, reload cities for dropdown and return to form
-                ViewBag.Cities = _context.Cities.ToList();
-                return View(client);
-            }
-            
-            // Hard-code CityID to 1, 2, or 3 (not using value from dropdown)
-            // Using 1 as an example, can be 2 or 3 as well
-            client.CityID = 1;
-            
-            // Add client to database context
-            _context.Clients.Add(client);
-            
             try 
             {
+                 if(!ModelState.IsValid){
+                    FillDropDownValues();
+                    return View(client);
+                 }
+                // Add client to database context
+                _context.Clients.Add(client);
+                
                 // Save changes to the database
                 _context.SaveChanges();
                 
                 // Redirect to index
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                // Add error message and return to form if save fails
+                // Log the actual exception
+                Console.WriteLine($"Exception during create: {ex.Message}");
+                Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
+                
+                // Add error message
                 ModelState.AddModelError("", "Error saving client: " + ex.InnerException?.Message ?? ex.Message);
-                ViewBag.Cities = _context.Cities.ToList();
-                return View(client);
             }
+            
+            // If we get here, something went wrong
+            FillDropDownValues();
+            return View(client);
+        }
+
+        [ActionName("Edit")]
+        public IActionResult EditGet(int id)
+        {
+            var client = _context.Clients.FirstOrDefault(c => c.ID == id);
+            
+            if (client == null)
+                return NotFound();
+                
+            FillDropDownValues();            
+            return View(client);
+        }
+
+        [HttpPost]
+        [ActionName("Edit")]
+        public ActionResult EditPost(int id)
+        {
+            Client client = _context.Clients.Find(id);
+            DebugHelper.DD(client);
+
+            TryUpdateModelAsync(client);
+            
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        // Add this method to your ClientController class
+        private void FillDropDownValues()
+        {
+            // Create a list with a "select" empty option first
+            var cities = _context.Cities.ToList();
+            ViewBag.Cities = cities;
         }
     }
 }

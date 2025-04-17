@@ -7,119 +7,106 @@
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-action="Index">Clients</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index" class="nav-link">Clients</a></li>
         <li class="breadcrumb-item active" aria-current="page">Create New</li>
     </ol>
 </nav>
 
 <h2>Create New Client</h2>
 
-<form asp-action="Create" method="post">
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="FirstName" class="form-label">First Name</label>
-                <input type="text" class="form-control" id="FirstName" name="FirstName" value="@Model.FirstName">
-                <span class="text-danger" asp-validation-for="FirstName"></span>
+<div class="row">
+    <div class="col-md-12">
+        <form asp-controller="Client" asp-action="Create" method="post" id="clientForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <partial name="_CreateOrEdit" model="Model" />
+            
+            <div class="row">
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a asp-action="Index" class="btn btn-secondary" id="cancelButton">Cancel</a>
+                </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="LastName" class="form-label">Last Name</label>
-                <input type="text" class="form-control" id="LastName" name="LastName" value="@Model.LastName">
-                <span class="text-danger" asp-validation-for="LastName"></span>
-            </div>
-        </div>
+        </form>
     </div>
-    
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="Email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email">
-                <span class="text-danger" asp-validation-for="Email"></span>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="PhoneNumber" class="form-label">Phone Number</label>
-                <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber" value="@Model.PhoneNumber">
-                <span class="text-danger" asp-validation-for="PhoneNumber"></span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="Address" class="form-label">Address</label>
-                <input type="text" class="form-control" id="Address" name="Address" value="@Model.Address">
-                <span class="text-danger" asp-validation-for="Address"></span>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="CityID" class="form-label">City</label>
-                <select class="form-select" id="CityID" name="CityID">
-                    <option value="">-- Select City --</option>
-                    @foreach (var city in ViewBag.Cities)
-                    {
-                        if (Model.CityID == city.ID)
-                        {
-                            <option value="@city.ID" selected>@city.Name</option>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Track if the form has been modified
+            var formIsDirty = false;
+            var allowNavigation = false;
+            
+            // Get the email input field (for the email hint functionality)
+            var emailField = $("input[name='Email']");
+            
+            // When any input, select, or textarea changes
+            $("#clientForm :input").on("change input", function() {
+                formIsDirty = true;
+            });
+            
+            // Email hint functionality
+            emailField.focus(function() {
+                // Create hint element if it doesn't exist
+                if ($("#email-hint").length === 0) {
+                    $("<div id='email-hint' class='form-text text-muted mt-1'>Please enter a valid email address (e.g., example@domain.com)</div>")
+                        .insertAfter(emailField.closest(".form-group"));
+                } else {
+                    $("#email-hint").show();
+                }
+            });
+            
+            emailField.blur(function() {
+                $("#email-hint").hide();
+            });
+            
+            // When the form is submitted successfully, turn off the dirty flag
+            $("#clientForm").submit(function() {
+                formIsDirty = false;
+                allowNavigation = true;
+                return true;
+            });
+            
+            // Single function to handle navigation confirmation
+            function handleNavigation(e) {
+                if (formIsDirty && !allowNavigation) {
+                    if (!confirm("You have unsaved changes. Are you sure you want to leave this page?")) {
+                        if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
                         }
-                        else
-                        {
-                            <option value="@city.ID">@city.Name</option>
-                        }
+                        return false;
+                    } else {
+                        // User confirmed navigation, allow it
+                        allowNavigation = true;
+                        return true;
                     }
-                </select>
-                <span class="text-danger" asp-validation-for="CityID"></span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="Gender" class="form-label">Gender</label>
-                <select class="form-select" id="Gender" name="Gender">
-                    @if (Model.Gender == 'M')
-                    {
-                        <option value="M" selected>Male</option>
-                    }
-                    else
-                    {
-                        <option value="M">Male</option>
-                    }
+                }
+                return true;
+            }
+            
+            // Handle cancel button click
+            $("#cancelButton").click(function(e) {
+                return handleNavigation(e);
+            });
+            
+            // Handle browser navigation/closing with unsaved changes
+            window.addEventListener("beforeunload", function(e) {
+                if (formIsDirty && !allowNavigation) {
+                    // Modern browsers typically ignore this message but still show a generic warning
+                    var confirmationMessage = "You have unsaved changes. Are you sure you want to leave this page?";
                     
-                    @if (Model.Gender == 'F')
-                    {
-                        <option value="F" selected>Female</option>
-                    }
-                    else
-                    {
-                        <option value="F">Female</option>
-                    }
-                    
-                    @if (Model.Gender == 'O')
-                    {
-                        <option value="O" selected>Other</option>
-                    }
-                    else
-                    {
-                        <option value="O">Other</option>
-                    }
-                </select>
-                <span class="text-danger" asp-validation-for="Gender"></span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row">
-        <div class="col">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-        </div>
-    </div>
-</form>
+                    // For older browsers
+                    (e || window.event).returnValue = confirmationMessage;
+                    return confirmationMessage;
+                }
+            });
+            
+            // Add event handlers for navigation links (except for submit buttons and anchors)
+            $(document).on("click", "a:not([href^='#']):not([href^='javascript']):not([type='submit'])", function(e) {
+                return handleNavigation(e);
+            });
+        });
+    </script>
+}

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Vjezba.DAL;
 
@@ -10,9 +11,11 @@ using Vjezba.DAL;
 namespace Vjezba.DAL.Migrations
 {
     [DbContext(typeof(ClientManagerDbContext))]
-    partial class ClientManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250417190332_AddWorkingExperience")]
+    partial class AddWorkingExperience
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.3");
@@ -63,9 +66,6 @@ namespace Vjezba.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -89,7 +89,6 @@ namespace Vjezba.DAL.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("WorkingExperience")
-                        .IsRequired()
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ID");
@@ -108,8 +107,7 @@ namespace Vjezba.DAL.Migrations
                             FirstName = "Leon",
                             Gender = 'M',
                             LastName = "Kardas",
-                            PhoneNumber = "0912345678",
-                            WorkingExperience = 5
+                            PhoneNumber = "0912345678"
                         });
                 });
 

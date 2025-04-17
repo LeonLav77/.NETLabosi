@@ -1,0 +1,27 @@
+@model Vjezba.Web.Models.ClientFilterModel
+
+<div class="row">
+    <div class="col">
+        <div class="form-group">
+            <input type="text" class="form-control" name="FullName" placeholder="Pretraga po imenu" value="@Model?.FullName">
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            <input type="text" class="form-control" name="Address" placeholder="Pretraga po adresi" value="@Model?.Address">
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            <input type="text" class="form-control" name="Email" placeholder="Pretraga po e-mailu" value="@Model?.Email">
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            <input type="text" class="form-control" name="City" placeholder="Pretraga po gradu" value="@Model?.City">
+        </div>
+    </div>
+    <div class="col">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</div>

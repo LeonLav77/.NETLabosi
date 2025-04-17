@@ -1,0 +1,27 @@
+@model Vjezba.Web.Models.ClientFilterModel
+
+<div class="row">
+    <div class="col">
+        <div class="form-group">
+            @Html.EditorFor(m => m.FullName, new { htmlAttributes = new { @class = "form-control", placeholder = "Search by name" } })
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            @Html.EditorFor(m => m.Address, new { htmlAttributes = new { @class = "form-control", placeholder = "Search by address" } })
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            <input asp-for="Email" class="form-control" placeholder="Search by email" />
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            @Html.TextBoxFor(m => m.City, new { @class = "form-control", placeholder = "Search by city" })
+        </div>
+    </div>
+    <div class="col">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</div>

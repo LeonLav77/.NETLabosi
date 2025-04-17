@@ -1,121 +1,144 @@
-﻿@using Vjezba.Web.Mock
-@model List<Client>
+﻿@model List<Client>
 
 @{
-	ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Clients";
 }
 
 <style>
-	.tab-pane {
-		padding: 20px;
-	}
+    .tab-pane {
+        padding: 20px;
+    }
 </style>
 
 <div style="margin-top: 20px;">
-	<!-- Nav tabs -->
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link @(ViewBag.ActiveTab == 1 ? "active" : "")" href="#tab1" aria-controls="tab1" role="tab" data-bs-toggle="tab">Simple Search</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewBag.ActiveTab == 2 ? "active" : "")" href="#tab2" aria-controls="tab2" role="tab" data-bs-toggle="tab">Name & Address</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewBag.ActiveTab == 3 ? "active" : "")" href="#tab3" aria-controls="tab3" role="tab" data-bs-toggle="tab">Advanced Search</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewBag.ActiveTab == 4 ? "active" : "")" href="#tab4" aria-controls="tab4" role="tab" data-bs-toggle="tab">Zadatak 3.3</a>
+        </li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 1 ? "show active" : "")" id="tab1">
+            <h4>Simple Search</h4>
+            <form action="@Url.Action("Index")" method="get">
+                <div class="row">
+                    <div class="col-9">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="query" placeholder="Search term">
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 2 ? "show active" : "")" id="tab2">
+            <h4>Name & Address Search</h4>
+            <form action="@Url.Action("Index")" method="post">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="queryName" placeholder="Search by name">
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="queryAddress" placeholder="Search by address">
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 3 ? "show active" : "")" id="tab3">
+            <h4>Advanced Search</h4>
+            <form action="@Url.Action("AdvancedSearch")" method="post">
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="FullName" placeholder="Search by name">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="Address" placeholder="Search by address">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="Email" placeholder="Search by email">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="City" placeholder="Search by city">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 4 ? "show active" : "")" id="tab4">
+            
+            <h4>Zadatak 3.3 - Partial View</h4>
+            <!-- Method 1: Using Html.PartialAsync() -->
+            <form action="@Url.Action("AdvancedSearch")" method="post">
+                @await Html.PartialAsync("_ClientFilter", (Vjezba.Web.Models.ClientFilterModel)ViewBag.Filter ?? new Vjezba.Web.Models.ClientFilterModel())
+            
+            <!-- Method 2: Using tag helper (comment/uncomment as needed) -->
+            @* <form action="@Url.Action("AdvancedSearch")" method="post"> *@
+                @* <partial name="_ClientFilter" model=(Vjezba.Web.Models.ClientFilterModel)ViewBag.Filter ?? new Vjezba.Web.Models.ClientFilterModel() /> *@
+            </form>
+            
+            <!-- Additional form using EditorFor and NameFor -->
+            <h4 class="mt-4">Form with EditorFor and NameFor</h4>
+            <form action="@Url.Action("AdvancedSearch")" method="post">
+                @await Html.PartialAsync("_ClientFilterFor", (Vjezba.Web.Models.ClientFilterModel)ViewBag.Filter ?? new Vjezba.Web.Models.ClientFilterModel())
+            </form>
 
-	<ul class="nav nav-tabs">
-		<li class="nav-item">
-			<a class="nav-link @(ViewBag.ActiveTab == 1 ? "active" : "")" href="#z-5-5" aria-controls="z-5-5" role="tab" data-bs-toggle="tab">Zadatak 5.5</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link @(ViewBag.ActiveTab == 2 ? "active" : "")" href="#z-5-6" aria-controls="z-5-6" role="tab" data-bs-toggle="tab">Zadatak 5.6</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link @(ViewBag.ActiveTab == 3 ? "active" : "")" href="#z-5-7" aria-controls="z-5-7" role="tab" data-bs-toggle="tab">Zadatak 5.7</a>
-		</li>
-	</ul>
-
-	<!-- Tab panes -->
-	<div class="tab-content">
-		<div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 1 ? "show active" : "")" id="z-5-5">
-			<h4>Zadatak 5.5 - GET forma s jednim parametrom</h4>
-			<form action="@Url.Action("Index")" method="get">
-				<div class="row">
-					<div class="col-9">
-						<div class="form-group">
-							<input type="text" class="form-control" name="query" placeholder="Upišite željeni pojam">
-						</div>
-					</div>
-					<div class="col-3">
-						<button type="submit" class="btn btn-primary">Submit</button>
-					</div>
-				</div>
-			</form>
-		</div>
-		<div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 2 ? "show active" : "")" id="z-5-6">
-			<h4>Zadatak 5.6 - POST forma s dva parametra</h4>
-			<form action="@Url.Action("Index")" method="post">
-				<div class="row">
-					<div class="col-4">
-						<div class="form-group">
-							<input type="text" class="form-control" name="queryName" placeholder="Pretraga po imenu">
-						</div>
-					</div>
-					<div class="col-4">
-						<div class="form-group">
-							<input type="text" class="form-control" name="queryAddress" placeholder="Pretraga po adresi">
-						</div>
-					</div>
-					<div class="col-2">
-						<button type="submit" class="btn btn-primary">Submit</button>
-					</div>
-				</div>
-			</form>
-		</div>
-		<div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 3 ? "show active" : "")" id="z-5-7">
-			<h4>Zadatak 5.7 - POST forma, binding na model</h4>
-			<form action="@Url.Action("AdvancedSearch")" method="post" class="form-inline">
-				<div class="row">
-					<div class="col">
-						<div class="form-group">
-							<input type="text" class="form-control" name="FullName" placeholder="Pretraga po imenu">
-						</div>
-					</div>
-					<div class="col">
-						<div class="form-group">
-							<input type="text" class="form-control" name="Address" placeholder="Pretraga po adresi">
-						</div>
-					</div>
-					<div class="col">
-						<div class="form-group">
-							<input type="text" class="form-control" name="Email" placeholder="Pretraga po e-mailu">
-						</div>
-					</div>
-					<div class="col">
-						<div class="form-group">
-							<input type="text" class="form-control" name="City" placeholder="Pretraga po gradu">
-						</div>
-					</div>
-					<div class="col">
-						<button type="submit" class="btn btn-primary m-t-10">Submit</button>
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
 
-<table style="margin-top: 20px;" class="table table-condensed">
-	<thead>
-		<tr>
-			<th>Client</th>
-			<th>Address</th>
-			<th>Email</th>
-			<th>City</th>
-		</tr>
-	</thead>
-	<tbody>
-		@foreach (var item in Model)
-		{
-			<tr>
-				<td>
-					<a asp-action="Details" asp-route-id="@item.ID">@item.FullName</a>
-				</td>
-				<td>@item.Address</td>
-				<td>@item.Email</td>
-				<td>@item.City?.Name</td>
-			</tr>
-		}
-	</tbody>
+<div class="mt-3">
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
+</div>
+
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Client</th>
+            <th>Address</th>
+            <th>Email</th>
+            <th>City</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ID">@item.FullName</a>
+                </td>
+                <td>@item.Address</td>
+                <td>@item.Email</td>
+                <td>@item.City?.Name</td>
+            </tr>
+        }
+    </tbody>
 </table>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using Vjezba.Web.Models;
+using Vjezba.Model;
 
 namespace Vjezba.Web.Controllers
 {
@@ -13,15 +14,32 @@ namespace Vjezba.Web.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Privacy(string lang)
         {
+            var messages = new Dictionary<string, string>
+            {
+                { "en", "Welcome to our privacy policy page." },
+                { "hr", "Dobrodošli na našu stranicu pravila privatnosti." },
+                { "de", "Willkommen auf unserer Datenschutzrichtlinienseite." },
+                { "zh", "欢迎访问我们的隐私政策页面。" }
+            };
+
+            if (messages.TryGetValue(lang?.ToLower() ?? "", out var message))
+            {
+                ViewBag.Message = message;
+            }
+            else
+            {
+                return NotFound();
+            }
+            
             return View();
         }
 
-        public IActionResult FAQ(int? selected = null)
+        [Route("cesto-postavljana-pitanja/{id:int:range(1,99)?}")]
+        public IActionResult FAQ(int? id = null)
         {
-            ViewData["selected"] = selected;
-
+            ViewData["selected"] = id;
             return View();
         }
 

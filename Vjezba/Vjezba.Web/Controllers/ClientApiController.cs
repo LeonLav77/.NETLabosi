@@ -120,7 +120,7 @@ public async Task<IActionResult> PutClient(int id, [FromBody] Client client)
         return BadRequest(ModelState);
 
     var existingClient = await _context.Clients.FindAsync(id);
-    
+
     if (existingClient == null)
         return NotFound();
 
@@ -150,6 +150,21 @@ public async Task<IActionResult> PutClient(int id, [FromBody] Client client)
     return NoContent();
 }
 
+// DELETE: api/client/5
+[HttpDelete("{id}")]
+public async Task<IActionResult> DeleteClient(int id)
+{
+    var client = await _context.Clients.FindAsync(id);
+    if (client == null)
+    {
+        return NotFound();
+    }
+
+    _context.Clients.Remove(client);
+    await _context.SaveChangesAsync();
+
+    return NoContent();
+}
 
         private bool ClientExists(int id)
         {

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Vjezba.Model
 {
@@ -42,6 +40,9 @@ namespace Vjezba.Model
         [ForeignKey("City")]
         [Display(Name = "City")]
         public int? CityID { get; set; }
+        
+        [JsonIgnore]
+        [ValidateNever] 
         public virtual City City { get; set; }
         
         [Required(ErrorMessage = "Please Enter number")]
@@ -54,7 +55,9 @@ namespace Vjezba.Model
         [DataType(DataType.Date)]
         public DateTime? DateOfBirth { get; set; }
         
-        public virtual ICollection<Meeting> Meetings { get; set; }
+        [JsonIgnore]
+        [InverseProperty("Client")]
+        public virtual ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
         
         public string FullName => $"{FirstName} {LastName}";
     }

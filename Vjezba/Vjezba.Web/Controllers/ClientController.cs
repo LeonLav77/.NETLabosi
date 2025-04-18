@@ -20,7 +20,7 @@ namespace Vjezba.Web.Controllers
             _context = context;
         }
 
-        public IActionResult Index(string query = null)
+        public IActionResult Index()
         {
             // Load the base query with included related data
             var clientQuery = _context.Clients.Include(c => c.City);
@@ -29,66 +29,11 @@ namespace Vjezba.Web.Controllers
             var clientsInMemory = clientQuery.AsEnumerable();
             
             // Filter by FullName in memory if needed
-            if (!string.IsNullOrWhiteSpace(query))
-            {
-                clientsInMemory = clientsInMemory.Where(p => p.FullName.ToLower().Contains(query.ToLower()));
-            }
-
             ViewBag.ActiveTab = 1;
             
             return View(clientsInMemory.OrderBy(c => c.ID).ToList());
         }
 
-        [HttpPost]
-        public ActionResult Index(string queryName, string queryAddress)
-        {
-            // Load the base query with included related data
-            var clientQuery = _context.Clients.Include(c => c.City);
-            
-            // Switch to client-side evaluation
-            var clientsInMemory = clientQuery.AsEnumerable();
-            
-            // Apply client-side filters
-            if (!string.IsNullOrWhiteSpace(queryName))
-                clientsInMemory = clientsInMemory.Where(p => p.FullName.ToLower().Contains(queryName.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(queryAddress))
-                clientsInMemory = clientsInMemory.Where(p => p.Address.ToLower().Contains(queryAddress.ToLower()));
-
-            ViewBag.ActiveTab = 2;
-
-            return View(clientsInMemory.OrderBy(c => c.ID).ToList());
-        }
-
-        [HttpPost]
-        public ActionResult AdvancedSearch(ClientFilterModel filter)
-        {
-            // Start with the base query
-            var clientQuery = _context.Clients.Include(c => c.City);
-            
-            // Switch to client-side evaluation
-            var clientsInMemory = clientQuery.AsEnumerable();
-            
-            // Apply all filters in memory
-            if (!string.IsNullOrWhiteSpace(filter.FullName))
-                clientsInMemory = clientsInMemory.Where(p => p.FullName.ToLower().Contains(filter.FullName.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(filter.Address))
-                clientsInMemory = clientsInMemory.Where(p => p.Address.ToLower().Contains(filter.Address.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(filter.Email))
-                clientsInMemory = clientsInMemory.Where(p => p.Email.ToLower().Contains(filter.Email.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(filter.City))
-                clientsInMemory = clientsInMemory.Where(p => p.City != null && p.City.Name.ToLower().Contains(filter.City.ToLower()));
-
-            // Check if the request came from our new tab
-            ViewBag.ActiveTab = 4;
-
-            ViewBag.Filter = filter;
-
-            return View("Index", clientsInMemory.OrderBy(c => c.ID).ToList());
-        }
 
         public IActionResult Details(int? id = null)
         {
@@ -162,7 +107,6 @@ namespace Vjezba.Web.Controllers
         public ActionResult EditPost(int id)
         {
             Client client = _context.Clients.Find(id);
-            DebugHelper.DD(client);
 
             TryUpdateModelAsync(client);
             
@@ -176,6 +120,103 @@ namespace Vjezba.Web.Controllers
             // Create a list with a "select" empty option first
             var cities = _context.Cities.ToList();
             ViewBag.Cities = cities;
+        }
+
+
+
+          // POST: Client/UploadAttachment
+        [HttpPost]
+        public async Task<IActionResult> UploadAttachment(int clientId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("File is empty");
+
+            var client = await _context.Clients.FindAsync(clientId);
+            if (client == null)
+                return NotFound($"Client with ID {clientId} not found");
+
+            try
+            {
+                // Create directory if it doesn't exist
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "clients", clientId.ToString());
+                Directory.CreateDirectory(uploadsFolder);
+
+                // Create unique filename
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save file to disk
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                // Save file info to database
+                var attachment = new Attachment
+                {
+                    FileName = file.FileName,
+                    FilePath = Path.Combine("uploads", "clients", clientId.ToString(), uniqueFileName),
+                    UploadDate = DateTime.Now,
+                    ClientID = clientId
+                };
+
+                _context.Attachments.Add(attachment);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { fileName = file.FileName, id = attachment.ID });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        // GET: Client/GetAttachments
+        [HttpGet]
+        public async Task<IActionResult> GetAttachments(int clientId)
+        {
+            try
+            {
+                var attachments = await _context.Attachments
+                    .Where(a => a.ClientID == clientId)
+                    .OrderByDescending(a => a.UploadDate)
+                    .ToListAsync();
+
+                return PartialView("_AttachmentList", attachments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        // POST: Client/DeleteAttachment
+        [HttpPost]
+        public async Task<IActionResult> DeleteAttachment(int id)
+        {
+            try
+            {
+                var attachment = await _context.Attachments.FindAsync(id);
+                if (attachment == null)
+                    return NotFound();
+
+                // Delete file from disk
+                string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", attachment.FilePath);
+                if (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+
+                // Remove from database
+                _context.Attachments.Remove(attachment);
+                await _context.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }

@@ -1,223 +1,107 @@
-@using Vjezba.Model
-@model Client
+@model Vjezba.Model.Client
 
 @{
     ViewData["Title"] = "Edit Client";
 }
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-action="Index">Clients</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Edit Client</li>
-    </ol>
-</nav>
-
-<h2>Edit Client</h2>
-
-<!-- Add simple jQuery UI for autocomplete instead of Mapbox -->
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-<style>
-    .ui-autocomplete {
-        max-height: 200px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        z-index: 9999 !important;
-    }
-    
-    .ui-menu-item {
-        font-size: 14px;
-        padding: 8px 10px;
-    }
-    
-    .ui-menu-item:hover {
-        background-color: #f8f9fa;
-        cursor: pointer;
-    }
-    
-    #address-loading {
-        display: none;
-        position: absolute;
-        right: 10px;
-        top: 10px;
-        font-size: 12px;
-        color: #6c757d;
-    }
-    
-    .address-container {
-        position: relative;
-    }
-</style>
+<h1>Edit Client</h1>
 
 <div class="row">
-    <div class="col-md-12">
-        <form asp-controller="Client" asp-action="Edit" method="post" id="editForm">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            
+    <div class="col-md-4">
+        <form asp-action="Edit">
             <input type="hidden" asp-for="ID" />
-            
-            <partial name="_CreateOrEdit" model="Model" />
-            
-            <div class="row">
-                <div class="col">
-                    <button type="submit" class="btn btn-primary" id="saveButton">Save</button>
-                    <a asp-action="Index" class="btn btn-secondary" id="cancelButton">Cancel</a>
-                </div>
+            <partial name="_CreateOrUpdate" />
+            <div class="form-group mt-3">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
     </div>
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Client Attachments</h5>
+            </div>
+            <div class="card-body">
+                <label class="control-label">Upload Documents</label>
+                <form id="attachmentDz" asp-controller="Client" asp-action="UploadAttachment"
+                      asp-route-clientId="@Model.ID"
+                      enctype="multipart/form-data" class="dropzone"></form>
+                
+                <div id="attachmentsContainer" class="mt-4">
+                    <!-- Attachment list will be loaded here via AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-@section Scripts {
-    <!-- Add jQuery UI for autocomplete -->
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <script>
+@section Scripts{
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <script type="text/javascript">
         $(document).ready(function() {
-            // Find the address input field
-            var addressInput = $("input[name='Address']");
-            var addressContainer = addressInput.closest('.form-group');
+            // Load attachments when the page loads
+            loadAttachments();
             
-            // Add a loading indicator
-            addressContainer.addClass('address-container');
-            addressContainer.append('<span id="address-loading">Loading suggestions...</span>');
-            
-            // Check if we're in Croatia to determine the best API endpoint
-            function getCountryCodeFromAddress(address) {
-                // Default to Croatia if no specific country is detected
-                if (!address || address.toLowerCase().indexOf('croatia') > -1) {
-                    return 'hr';
-                }
-                // Try to extract country from address
-                var countryMatches = {
-                    'slovenia': 'si',
-                    'italy': 'it',
-                    'austria': 'at',
-                    'hungary': 'hu',
-                    'bosnia': 'ba',
-                    'montenegro': 'me',
-                    'serbia': 'rs'
-                };
+            // Handle delete attachment
+            $(document).on('click', '.delete-attachment', function() {
+                var attachmentId = $(this).data('id');
                 
-                for (var country in countryMatches) {
-                    if (address.toLowerCase().indexOf(country) > -1) {
-                        return countryMatches[country];
-                    }
-                }
-                
-                return 'hr'; // default to Croatia
-            }
-            
-            // Initialize autocomplete with error handling
-            addressInput.autocomplete({
-                minLength: 3,
-                delay: 500,
-                source: function(request, response) {
-                    var term = request.term;
-                    $('#address-loading').show();
-                    
-                    // Determine country for better suggestions
-                    var countryCode = getCountryCodeFromAddress(term);
-                    
-                    // Build OSM Nominatim API URL (free, no token required)
-                    var nominatimUrl = 'https://nominatim.openstreetmap.org/search';
-                    
-                    // Use jQuery AJAX with error handling
+                if (confirm('Are you sure you want to delete this attachment?')) {
                     $.ajax({
-                        url: nominatimUrl,
-                        dataType: 'json',
-                        data: {
-                            q: term,
-                            format: 'json',
-                            addressdetails: 1,
-                            limit: 10,
-                            countrycodes: countryCode
-                        },
-                        success: function(data) {
-                            $('#address-loading').hide();
-                            
-                            if (data && data.length > 0) {
-                                response($.map(data, function(item) {
-                                    return {
-                                        label: item.display_name,
-                                        value: item.display_name,
-                                        data: item
-                                    };
-                                }));
-                            } else {
-                                return response([]);
-                            }
+                        url: '@Url.Action("DeleteAttachment", "Client")',
+                        type: 'POST',
+                        data: { id: attachmentId },
+                        success: function() {
+                            // Reload the attachments list
+                            loadAttachments();
                         },
                         error: function(xhr, status, error) {
-                            console.log("Error in address autocomplete: " + error);
-                            $('#address-loading').hide();
-                            response([]);
+                            alert('Error deleting attachment: ' + error);
                         }
                     });
-                },
-                select: function(event, ui) {
-                    // When an address is selected, try to extract city
-                    var address = ui.item.value;
-                    
-                    // Basic city extraction - look for common Croatian cities
-                    var cities = {
-                        'Zagreb': ['Zagreb', 'Zagreba'],
-                        'Split': ['Split', 'Splita'],
-                        'Rijeka': ['Rijeka', 'Rijeke'],
-                        'Osijek': ['Osijek', 'Osijeka'],
-                        'Zadar': ['Zadar', 'Zadra'],
-                        'Pula': ['Pula', 'Pule'],
-                        'Slavonski Brod': ['Slavonski Brod', 'Slavonskom Brodu'],
-                        'Dubrovnik': ['Dubrovnik', 'Dubrovnika']
-                    };
-                    
-                    // Try to auto-select city based on address
-                    for (var cityId in cities) {
-                        var cityVariants = cities[cityId];
-                        for (var i = 0; i < cityVariants.length; i++) {
-                            if (address.indexOf(cityVariants[i]) > -1) {
-                                // Find the city in the dropdown and select it if available
-                                $("#CityID option").each(function() {
-                                    if ($(this).text() === cityId) {
-                                        $("#CityID").val($(this).val());
-                                        return false;
-                                    }
-                                });
-                                break;
-                            }
-                        }
-                    }
-                    
-                    return true;
-                }
-            });
-            
-            // Add dirty form detection
-            var formIsDirty = false;
-            var isSubmitting = false;
-            
-            // When any input, select, or textarea changes
-            $("form :input").on("change input", function() {
-                formIsDirty = true;
-            });
-            
-            // Set the isSubmitting flag when the form is submitted
-            $("#saveButton").click(function() {
-                isSubmitting = true;
-            });
-            
-            // Also set the flag when the form is submitted via Enter key
-            $("#editForm").on("submit", function() {
-                isSubmitting = true;
-            });
-            
-            // Warning when navigating away with unsaved changes
-            window.addEventListener("beforeunload", function(e) {
-                // Only show warning if form is dirty AND NOT being submitted
-                if (formIsDirty && !isSubmitting) {
-                    var confirmationMessage = "You have unsaved changes. Are you sure you want to leave this page?";
-                    (e || window.event).returnValue = confirmationMessage;
-                    return confirmationMessage;
                 }
             });
         });
+        
+        function loadAttachments() {
+            $.ajax({
+                url: '@Url.Action("GetAttachments", "Client")',
+                type: 'GET',
+                data: { clientId: @Model.ID },
+                success: function(data) {
+                    $('#attachmentsContainer').html(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading attachments:', error);
+                }
+            });
+        }
+        
+        // Configure Dropzone
+        Dropzone.options.attachmentDz = {
+            paramName: "file", // Name of the input field (default is "file")
+            maxFilesize: 10, // MB
+            addRemoveLinks: true,
+            dictDefaultMessage: "Drop files here or click to upload",
+            dictRemoveFile: "Remove",
+            success: function(file, response) {
+                console.log('File uploaded:', response);
+                // Reload the attachments list
+                loadAttachments();
+            },
+            complete: function(file) {
+                // Clear the Dropzone preview after upload
+                if (file.status === "success") {
+                    setTimeout(function() {
+                        Dropzone.forElement("#attachmentDz").removeFile(file);
+                    }, 3000);
+                }
+            },
+            error: function(file, errorMessage) {
+                console.error('Error uploading file:', errorMessage);
+            }
+        };
     </script>
 }

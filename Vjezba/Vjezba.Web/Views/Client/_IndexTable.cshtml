@@ -1,0 +1,31 @@
+@model List<Vjezba.Model.Client>
+
+<table class="table table-striped mt-3" id="tbl-clients">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Client</th>
+            <th>Address</th>
+            <th>Email</th>
+            <th>City</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderBy(c => c.ID))
+        {
+            <tr>
+                <td>@item.ID</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ID">@item.FullName</a>
+                </td>
+                <td>@item.Address</td>
+                <td>@item.Email</td>
+                <td>@item.City?.Name</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-sm btn-primary">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,18 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Vjezba.Model;
 using Vjezba.Model.DTO;
 using Vjezba.DAL;
+using Vjezba.Web.Models;
 
 namespace Vjezba.Controllers.Api
 {
     [Route("api/client")]
     [ApiController]
-    public class ClientApiController : ControllerBase
+    public class ClientApiController : Controller
     {
         private readonly ClientManagerDbContext _context;
 
@@ -109,66 +106,105 @@ namespace Vjezba.Controllers.Api
 
 
 
-// PUT: api/client/5
-[HttpPut("{id}")]
-public async Task<IActionResult> PutClient(int id, [FromBody] Client client)
-{
-    if (id != client.ID)
-        return BadRequest("ID mismatch");
+        // PUT: api/client/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutClient(int id, [FromBody] Client client)
+        {
+            if (id != client.ID)
+                return BadRequest("ID mismatch");
 
-    if (!ModelState.IsValid)
-        return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-    var existingClient = await _context.Clients.FindAsync(id);
+            var existingClient = await _context.Clients.FindAsync(id);
 
-    if (existingClient == null)
-        return NotFound();
+            if (existingClient == null)
+                return NotFound();
 
-    // Ručno ažuriranje vrijednosti
-    existingClient.FirstName = client.FirstName;
-    existingClient.LastName = client.LastName;
-    existingClient.Email = client.Email;
-    existingClient.Gender = client.Gender;
-    existingClient.Address = client.Address;
-    existingClient.PhoneNumber = client.PhoneNumber;
-    existingClient.CityID = client.CityID;
-    existingClient.WorkingExperience = client.WorkingExperience;
-    existingClient.DateOfBirth = client.DateOfBirth;
+            // Ručno ažuriranje vrijednosti
+            existingClient.FirstName = client.FirstName;
+            existingClient.LastName = client.LastName;
+            existingClient.Email = client.Email;
+            existingClient.Gender = client.Gender;
+            existingClient.Address = client.Address;
+            existingClient.PhoneNumber = client.PhoneNumber;
+            existingClient.CityID = client.CityID;
+            existingClient.WorkingExperience = client.WorkingExperience;
+            existingClient.DateOfBirth = client.DateOfBirth;
 
-    try
-    {
-        await _context.SaveChangesAsync();
-    }
-    catch (DbUpdateConcurrencyException)
-    {
-        if (!ClientExists(id))
-            return NotFound();
-        else
-            throw;
-    }
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ClientExists(id))
+                    return NotFound();
+                else
+                    throw;
+            }
 
-    return NoContent();
-}
+            return NoContent();
+        }
 
-// DELETE: api/client/5
-[HttpDelete("{id}")]
-public async Task<IActionResult> DeleteClient(int id)
-{
-    var client = await _context.Clients.FindAsync(id);
-    if (client == null)
-    {
-        return NotFound();
-    }
+        // DELETE: api/client/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteClient(int id)
+        {
+            var client = await _context.Clients.FindAsync(id);
+            if (client == null)
+            {
+                return NotFound();
+            }
 
-    _context.Clients.Remove(client);
-    await _context.SaveChangesAsync();
+            _context.Clients.Remove(client);
+            await _context.SaveChangesAsync();
 
-    return NoContent();
-}
+            return NoContent();
+        }
 
         private bool ClientExists(int id)
         {
             return _context.Clients.Any(e => e.ID == id);
+        }
+
+        // method with IndexAjax name, that takes in a ClientFilterModel, and return a partial view
+        [HttpPost("IndexAjax")]
+        public async Task<IActionResult> IndexAjax([FromBody] ClientFilterModel filter)
+        {
+            // Start with the base query
+            IQueryable<Client> query = _context.Clients.Include(c => c.City);
+
+            // Apply filters after loading the data into memory to avoid translation issues
+            // First retrieve all the data
+            List<Client> clients = await query.ToListAsync();
+            
+            // Then filter in memory
+            if (!string.IsNullOrWhiteSpace(filter.FullName))
+            {
+                clients = clients.Where(c => c.FullName != null && 
+                    c.FullName.Contains(filter.FullName, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.Address))
+            {
+                clients = clients.Where(c => c.Address != null && 
+                    c.Address.Contains(filter.Address, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.Email))
+            {
+                clients = clients.Where(c => c.Email != null && 
+                    c.Email.Contains(filter.Email, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.City))
+            {
+                clients = clients.Where(c => c.City != null && c.City.Name != null && 
+                    c.City.Name.Contains(filter.City, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            return PartialView("~/Views/Client/_IndexTable.cshtml", clients);
         }
     }
 }

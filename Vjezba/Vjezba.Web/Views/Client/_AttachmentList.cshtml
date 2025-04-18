@@ -1,0 +1,39 @@
+@model IEnumerable<Vjezba.Model.Attachment>
+
+<div class="attachment-list mt-3">
+    <h5>Uploaded Attachments</h5>
+    
+    @if (Model.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Upload Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var attachment in Model)
+                {
+                    <tr>
+                        <td>
+                            <a href="/@attachment.FilePath" target="_blank">@attachment.FileName</a>
+                        </td>
+                        <td>@attachment.UploadDate.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger delete-attachment" 
+                                    data-id="@attachment.ID">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No attachments uploaded yet.</p>
+    }
+</div>

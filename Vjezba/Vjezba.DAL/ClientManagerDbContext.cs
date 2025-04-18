@@ -15,6 +15,8 @@ namespace Vjezba.DAL
         public DbSet<Meeting> Meetings { get; set; }
 
         public DbSet<City> Cities { get; set; }
+
+        public DbSet<Attachment> Attachments { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,4 +1,4 @@
-﻿@model List<Client>
+﻿@model List<Vjezba.Model.Client>
 
 @{
     ViewData["Title"] = "Clients";
@@ -35,7 +35,7 @@
     <div class="tab-content">
         <div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 1 ? "show active" : "")" id="tab1">
             <h4>Simple Search</h4>
-            <form action="@Url.Action("Index")" method="get">
+            <form id="simpleSearchForm">
                 <div class="row">
                     <div class="col-9">
                         <div class="form-group">
@@ -43,14 +43,14 @@
                         </div>
                     </div>
                     <div class="col-3">
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" class="btn btn-primary" id="btnSimpleSearch">Submit</button>
                     </div>
                 </div>
             </form>
         </div>
         <div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 2 ? "show active" : "")" id="tab2">
             <h4>Name & Address Search</h4>
-            <form action="@Url.Action("Index")" method="post">
+            <form id="nameAddressSearchForm">
                 <div class="row">
                     <div class="col-4">
                         <div class="form-group">
@@ -63,14 +63,14 @@
                         </div>
                     </div>
                     <div class="col-2">
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" class="btn btn-primary" id="btnNameAddressSearch">Submit</button>
                     </div>
                 </div>
             </form>
         </div>
         <div role="tabpanel" class="tab-pane @(ViewBag.ActiveTab == 3 ? "show active" : "")" id="tab3">
             <h4>Advanced Search</h4>
-            <form action="@Url.Action("AdvancedSearch")" method="post">
+            <form id="advancedSearchForm">
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
@@ -93,7 +93,7 @@
                         </div>
                     </div>
                     <div class="col">
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" class="btn btn-primary" id="btnAdvancedSearch">Submit</button>
                     </div>
                 </div>
             </form>
@@ -102,20 +102,22 @@
             
             <h4>Zadatak 3.3 - Partial View</h4>
             <!-- Method 1: Using Html.PartialAsync() -->
-            <form action="@Url.Action("AdvancedSearch")" method="post">
+            <form id="clientFilterForm">
                 @await Html.PartialAsync("_ClientFilter", (Vjezba.Web.Models.ClientFilterModel)ViewBag.Filter ?? new Vjezba.Web.Models.ClientFilterModel())
-            
-            <!-- Method 2: Using tag helper (comment/uncomment as needed) -->
-            @* <form action="@Url.Action("AdvancedSearch")" method="post"> *@
-                @* <partial name="_ClientFilter" model=(Vjezba.Web.Models.ClientFilterModel)ViewBag.Filter ?? new Vjezba.Web.Models.ClientFilterModel() /> *@
+                <button type="button" class="btn btn-primary" id="btnClientFilter">Submit</button>
             </form>
+            <!-- Method 2: Using tag helper (comment/uncomment as needed) -->
+            @* <form id="clientFilterForm2">
+                <partial name="_ClientFilter" model="(Vjezba.Web.Models.ClientFilterModel)ViewBag.Filter ?? new Vjezba.Web.Models.ClientFilterModel()" />
+                <button type="button" class="btn btn-primary" id="btnClientFilter2">Submit</button>
+            </form> *@
             
             <!-- Additional form using EditorFor and NameFor -->
             <h4 class="mt-4">Form with EditorFor and NameFor</h4>
-            <form action="@Url.Action("AdvancedSearch")" method="post">
-                @await Html.PartialAsync("_ClientFilterFor", (Vjezba.Web.Models.ClientFilterModel)ViewBag.Filter ?? new Vjezba.Web.Models.ClientFilterModel())
-            </form>
-
+                <form id="clientFilterForForm">
+                    @await Html.PartialAsync("_ClientFilterFor", (Vjezba.Web.Models.ClientFilterModel)ViewBag.Filter ?? new Vjezba.Web.Models.ClientFilterModel())
+                    <button type="button" class="btn btn-primary" id="btnClientFilterFor">Submit</button>
+                </form>
         </div>
     </div>
 </div>
@@ -124,58 +126,126 @@
     <a asp-action="Create" class="btn btn-primary">Create New</a>
 </div>
 
-<table class="table table-striped mt-3">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Client</th>
-            <th>Address</th>
-            <th>Email</th>
-            <th>City</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.OrderBy(c => c.ID))
-        {
-            <tr>
-                <td>@item.ID</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.ID">@item.FullName</a>
-                </td>
-                <td>@item.Address</td>
-                <td>@item.Email</td>
-                <td>@item.City?.Name</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-sm btn-primary">Edit</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div id="clientTableContainer">
+    @await Html.PartialAsync("_IndexTable", Model)
+</div>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
+            // Prevent form submission on Enter key press
+            $('form').on('keypress', function(e) {
+                // Check if the key pressed was Enter (keyCode 13)
+                if (e.which === 13) {
+                    e.preventDefault();
+                    
+                    // Determine which form was used and trigger the appropriate button click
+                    if ($(this).attr('id') === 'simpleSearchForm') {
+                        $('#btnSimpleSearch').click();
+                    } else if ($(this).attr('id') === 'nameAddressSearchForm') {
+                        $('#btnNameAddressSearch').click();
+                    } else if ($(this).attr('id') === 'advancedSearchForm') {
+                        $('#btnAdvancedSearch').click();
+                    } else if ($(this).attr('id') === 'clientFilterForm') {
+                        $('#btnClientFilter').click();
+                    } else if ($(this).attr('id') === 'clientFilterForForm') {
+                        $('#btnClientFilterFor').click();
+                    }
+                }
+            });
+
             // 1. Set initial opacity of all table rows to 0.5
             $('table tbody tr').css('opacity', '0.5');
             
             // 2. Change opacity on hover
-            $('table tbody tr').hover(
-                function() {
-                    // Mouse over - set opacity to 1.0
-                    $(this).css('opacity', '1.0');
-                },
-                function() {
-                    // Mouse out - set opacity back to 0.5
-                    $(this).css('opacity', '0.5');
-                }
-            );
+            $(document).on('mouseenter', 'table tbody tr', function() {
+                // Mouse over - set opacity to 1.0
+                $(this).css('opacity', '1.0');
+            }).on('mouseleave', 'table tbody tr', function() {
+                // Mouse out - set opacity back to 0.5
+                $(this).css('opacity', '0.5');
+            });
             
             // 3. Toggle bold text on cell click
-            $('table tbody td').click(function() {
+            $(document).on('click', 'table tbody td', function() {
                 // Toggle bold class on the entire row
                 $(this).parent('tr').toggleClass('bold-text');
+            });
+
+            // Function to collect form data as an object
+            function collectFormData(formSelector) {
+                var formData = {};
+                $(formSelector + ' input[name]').each(function() {
+                    var name = $(this).attr('name');
+                    var value = $(this).val();
+                    if (value) {
+                        formData[name] = value;
+                    }
+                }); 
+
+                $(formSelector + ' input[name]').each(function() {
+                    var name = $(this).attr('name');
+                    if (!formData[name]) {
+                        formData[name] = "";
+                    }
+                });
+
+                return formData;
+            }
+            
+            // Function to perform AJAX filter
+            function performFilter(formData) {
+                console.log('Form data:', formData);
+                
+                $.ajax({
+                    url: '/api/client/IndexAjax',
+                    method: 'POST',
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        $('#clientTableContainer').html(response);
+                    },
+                    error: function(error) {
+                        console.error('Error performing filter:', error);
+                    }
+                });
+            }
+            
+            // Event handlers for filter buttons
+            $('#btnSimpleSearch').click(function() {
+                var query = $('#simpleSearchForm input[name="query"]').val();
+                var formData = {
+                    FullName: query,
+                    Address: "",
+                    Email: "",
+                    City: ""
+                };
+                performFilter(formData);
+            });
+            
+            $('#btnNameAddressSearch').click(function() {
+                var formData = {
+                    FullName: $('#nameAddressSearchForm input[name="queryName"]').val(),
+                    Address: $('#nameAddressSearchForm input[name="queryAddress"]').val(),
+                    Email: "",
+                    City: ""
+                };
+                performFilter(formData);
+            });
+            
+            $('#btnAdvancedSearch').click(function() {
+                var formData = collectFormData('#advancedSearchForm');
+                performFilter(formData);
+            });
+            
+            $('#btnClientFilter').click(function() {
+                var formData = collectFormData('#clientFilterForm');
+                performFilter(formData);
+            });
+            
+            $('#btnClientFilterFor').click(function() {
+                var formData = collectFormData('#clientFilterForForm');
+                performFilter(formData);
             });
         });
     </script>

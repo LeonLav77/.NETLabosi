@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -58,6 +60,11 @@ namespace Vjezba.Model
         [JsonIgnore]
         [InverseProperty("Client")]
         public virtual ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
+        
+        // Add Attachments collection
+        [JsonIgnore]
+        [InverseProperty("Client")]
+        public virtual ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
         
         public string FullName => $"{FirstName} {LastName}";
     }

@@ -2,12 +2,10 @@
 @using System.Globalization
 
 @{
-    // Get culture information for display and formatting
     var currentCulture = CultureInfo.CurrentCulture;
     var currentUICulture = CultureInfo.CurrentUICulture;
     var dateFormatInfo = currentCulture.DateTimeFormat;
     
-    // Get specific date format patterns
     var shortDatePattern = dateFormatInfo.ShortDatePattern;
     var longDatePattern = dateFormatInfo.LongDatePattern;
 }
@@ -115,7 +113,6 @@
     </div>
 </div>
 
-<!-- Culture Information Display Section -->
 <div class="row mb-3">
     <div class="col-md-6">
         <div class="card">
@@ -163,13 +160,10 @@
 @section Scripts {
     <script>
         $(function(){
-            // Get current culture information
             var currentCulture = '@currentCulture.Name';
             var shortDatePattern = '@shortDatePattern';
             
-            // Convert .NET date format to Bootstrap Datepicker format
             function convertToDatepickerFormat(pattern) {
-                // Replace .NET patterns with datepicker patterns
                 return pattern
                     .replace(/M{4}/g, 'MM')    // Full month name -> abbreviated month name
                     .replace(/M{3}/g, 'M')     // Abbreviated month name -> abbreviated month name
@@ -183,29 +177,20 @@
                     .replace(/yy/g, 'yy');     // Two-digit year -> two-digit year
             }
             
-            // Get datepicker format based on culture pattern
             var datepickerFormat = convertToDatepickerFormat(shortDatePattern);
             
-            // Fallback to standard formats if conversion fails
             if (!datepickerFormat) {
                 datepickerFormat = currentCulture.toLowerCase().startsWith('hr') ? 'dd.mm.yyyy' : 'mm/dd/yyyy';
             }
             
-            // Initialize datepicker with appropriate format
             $('#datepicker').datepicker({
                 format: datepickerFormat,
                 autoclose: true,
                 todayHighlight: true,
                 clearBtn: true,
-                language: currentCulture.substring(0, 2), // Extract language code (hr or en)
-                // Show today's date as default if no date is selected
+                language: currentCulture.substring(0, 2),
                 todayBtn: 'linked'
             });
-            
-            // Log format information to console for debugging
-            console.log("Current culture: " + currentCulture);
-            console.log(".NET date format: " + shortDatePattern);
-            console.log("Datepicker format: " + datepickerFormat);
         });
     </script>
 }

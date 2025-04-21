@@ -27,19 +27,15 @@ namespace Vjezba.Web.Controllers
         [AllowAnonymous]
         public IActionResult Index()
         {
-            // Load the base query with included related data
             var clientQuery = _context.Clients.Include(c => c.City);
 
-            // Then switch to client-side evaluation before using FullName
             var clientsInMemory = clientQuery.AsEnumerable();
             
-            // Filter by FullName in memory if needed
             ViewBag.ActiveTab = 1;
             
             return View(clientsInMemory.OrderBy(c => c.ID).ToList());
         }
 
-        [AllowAnonymous]
         public IActionResult Details(int? id = null)
         {
             if (id == null)
@@ -58,8 +54,8 @@ namespace Vjezba.Web.Controllers
         [Authorize(Roles = "Admin,Manager")]
         public IActionResult Create()
         {
-            // Fill dropdown values
             FillDropDownValues();
+
             return View(new Client());
         }
 
@@ -74,30 +70,23 @@ namespace Vjezba.Web.Controllers
                     return View(client);
                 }
                 
-                // Set created by information
                 client.CreatedById = UserId;
                 client.UpdatedById = UserId;
                 
-                // Add client to database context
                 _context.Clients.Add(client);
                 
-                // Save changes to the database
                 _context.SaveChanges();
                 
-                // Redirect to index
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                // Log the actual exception
                 Console.WriteLine($"Exception during create: {ex.Message}");
                 Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
                 
-                // Add error message
                 ModelState.AddModelError("", "Error saving client: " + ex.InnerException?.Message ?? ex.Message);
             }
             
-            // If we get here, something went wrong
             FillDropDownValues();
             return View(client);
         }
@@ -127,7 +116,6 @@ namespace Vjezba.Web.Controllers
 
             TryUpdateModelAsync(client);
             
-            // Update the UpdatedById field
             client.UpdatedById = UserId;
             
             _context.SaveChanges();
@@ -148,10 +136,8 @@ namespace Vjezba.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Add this method to your ClientController class
         private void FillDropDownValues()
         {
-            // Create a list with a "select" empty option first
             var cities = _context.Cities.ToList();
             ViewBag.Cities = cities;
         }
@@ -170,21 +156,17 @@ namespace Vjezba.Web.Controllers
 
             try
             {
-                // Create directory if it doesn't exist
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "clients", clientId.ToString());
                 Directory.CreateDirectory(uploadsFolder);
 
-                // Create unique filename
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                // Save file to disk
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(fileStream);
                 }
 
-                // Save file info to database
                 var attachment = new Attachment
                 {
                     FileName = file.FileName,
@@ -235,7 +217,6 @@ namespace Vjezba.Web.Controllers
                 if (attachment == null)
                     return NotFound();
 
-                // Delete file from disk
                 string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", attachment.FilePath);
                 if (System.IO.File.Exists(fullPath))
                 {
@@ -258,14 +239,10 @@ namespace Vjezba.Web.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> IndexAjax([FromBody] ClientFilterModel filter)
         {
-            // Start with the base query
             IQueryable<Client> query = _context.Clients.Include(c => c.City);
 
-            // Apply filters after loading the data into memory to avoid translation issues
-            // First retrieve all the data
             List<Client> clients = await query.ToListAsync();
             
-            // Then filter in memory
             if (!string.IsNullOrWhiteSpace(filter.FullName))
             {
                 clients = clients.Where(c => c.FullName != null && 

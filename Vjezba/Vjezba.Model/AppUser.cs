@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Vjezba.Model
 {
-    // Add profile data for application users by adding properties to the AppUser class
     public class AppUser : IdentityUser
     {
         [StringLength(11, MinimumLength = 11, ErrorMessage = "OIB must be exactly 11 characters")]

@@ -34,21 +34,16 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Track if the form has been modified
             var formIsDirty = false;
             var allowNavigation = false;
             
-            // Get the email input field (for the email hint functionality)
             var emailField = $("input[name='Email']");
             
-            // When any input, select, or textarea changes
             $("#clientForm :input").on("change input", function() {
                 formIsDirty = true;
             });
             
-            // Email hint functionality
             emailField.focus(function() {
-                // Create hint element if it doesn't exist
                 if ($("#email-hint").length === 0) {
                     $("<div id='email-hint' class='form-text text-muted mt-1'>Please enter a valid email address (e.g., example@domain.com)</div>")
                         .insertAfter(emailField.closest(".form-group"));
@@ -61,14 +56,12 @@
                 $("#email-hint").hide();
             });
             
-            // When the form is submitted successfully, turn off the dirty flag
             $("#clientForm").submit(function() {
                 formIsDirty = false;
                 allowNavigation = true;
                 return true;
             });
             
-            // Single function to handle navigation confirmation
             function handleNavigation(e) {
                 if (formIsDirty && !allowNavigation) {
                     if (!confirm("You have unsaved changes. Are you sure you want to leave this page?")) {
@@ -78,7 +71,6 @@
                         }
                         return false;
                     } else {
-                        // User confirmed navigation, allow it
                         allowNavigation = true;
                         return true;
                     }
@@ -86,24 +78,19 @@
                 return true;
             }
             
-            // Handle cancel button click
             $("#cancelButton").click(function(e) {
                 return handleNavigation(e);
             });
             
-            // Handle browser navigation/closing with unsaved changes
             window.addEventListener("beforeunload", function(e) {
                 if (formIsDirty && !allowNavigation) {
-                    // Modern browsers typically ignore this message but still show a generic warning
                     var confirmationMessage = "You have unsaved changes. Are you sure you want to leave this page?";
                     
-                    // For older browsers
                     (e || window.event).returnValue = confirmationMessage;
                     return confirmationMessage;
                 }
             });
             
-            // Add event handlers for navigation links (except for submit buttons and anchors)
             $(document).on("click", "a:not([href^='#']):not([href^='javascript']):not([type='submit'])", function(e) {
                 return handleNavigation(e);
             });

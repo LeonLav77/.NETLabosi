@@ -37,6 +37,11 @@
                         <li class="nav-item">
 							<a class="nav-link text-dark" asp-area="" asp-controller="Client" asp-action="Index">Popis klijenata</a>
 						</li>
+
+                        <li class="nav-item">
+                            <partial name="_LoginPartial" />
+                        </li>
+
                     </ul>
                 </div>
             </div>
@@ -65,7 +70,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.hr.min.js"></script>
     
     <partial name="_ValidationScriptsPartial" />
-    <partial name="_LoginPartial" />
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -29,7 +29,6 @@
                       enctype="multipart/form-data" class="dropzone"></form>
                 
                 <div id="attachmentsContainer" class="mt-4">
-                    <!-- Attachment list will be loaded here via AJAX -->
                 </div>
             </div>
         </div>
@@ -41,10 +40,8 @@
 <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
     <script type="text/javascript">
         $(document).ready(function() {
-            // Load attachments when the page loads
             loadAttachments();
             
-            // Handle delete attachment
             $(document).on('click', '.delete-attachment', function() {
                 var attachmentId = $(this).data('id');
                 
@@ -54,7 +51,6 @@
                         type: 'POST',
                         data: { id: attachmentId },
                         success: function() {
-                            // Reload the attachments list
                             loadAttachments();
                         },
                         error: function(xhr, status, error) {
@@ -79,20 +75,17 @@
             });
         }
         
-        // Configure Dropzone
         Dropzone.options.attachmentDz = {
-            paramName: "file", // Name of the input field (default is "file")
-            maxFilesize: 10, // MB
+            paramName: "file", 
+            maxFilesize: 10, 
             addRemoveLinks: true,
             dictDefaultMessage: "Drop files here or click to upload",
             dictRemoveFile: "Remove",
             success: function(file, response) {
                 console.log('File uploaded:', response);
-                // Reload the attachments list
                 loadAttachments();
             },
             complete: function(file) {
-                // Clear the Dropzone preview after upload
                 if (file.status === "success") {
                     setTimeout(function() {
                         Dropzone.forElement("#attachmentDz").removeFile(file);

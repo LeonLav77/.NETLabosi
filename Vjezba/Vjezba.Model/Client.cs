@@ -70,7 +70,6 @@ namespace Vjezba.Model
         [Display(Name = "Updated By")]
         public string? UpdatedById { get; set; }
 
-        // Concatenated FullName property
         public string FullName => $"{FirstName} {LastName}";
     }
 }

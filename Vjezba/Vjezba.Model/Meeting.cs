@@ -20,7 +20,6 @@ namespace Vjezba.Model
         public string? Location { get; set; }
         public string? Comments { get; set; }
 
-        // FK prema klijentu
         public int ClientID { get; set; }
 
         [ForeignKey("ClientID")]

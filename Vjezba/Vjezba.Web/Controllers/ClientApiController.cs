@@ -1,9 +1,12 @@
+// Vjezba.Web/Controllers/Api/ClientApiController.cs
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Vjezba.Model;
 using Vjezba.Model.DTO;
 using Vjezba.DAL;
 using Vjezba.Web.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace Vjezba.Controllers.Api
 {
@@ -12,14 +15,17 @@ namespace Vjezba.Controllers.Api
     public class ClientApiController : Controller
     {
         private readonly ClientManagerDbContext _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public ClientApiController(ClientManagerDbContext context)
+        public ClientApiController(ClientManagerDbContext context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/client
         [HttpGet]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<ClientDTO>> Get()
         {
             var clients = _context.Clients
@@ -43,6 +49,7 @@ namespace Vjezba.Controllers.Api
 
         // GET: api/client/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public ActionResult<ClientDTO> Get(int id)
         {
             var client = _context.Clients
@@ -72,6 +79,7 @@ namespace Vjezba.Controllers.Api
 
         // GET: api/client/pretraga/q
         [HttpGet("pretraga/{q}")]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<ClientDTO>> Get(string q)
         {
             var clients = _context.Clients
@@ -96,18 +104,21 @@ namespace Vjezba.Controllers.Api
 
         // POST: api/client
         [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<Client>> Post([FromBody] Client client)
         {
+            client.CreatedById = _userManager.GetUserId(User);
+            client.UpdatedById = client.CreatedById;
+            
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(Get), new { id = client.ID }, client);
         }
 
-
-
         // PUT: api/client/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> PutClient(int id, [FromBody] Client client)
         {
             if (id != client.ID)
@@ -131,6 +142,7 @@ namespace Vjezba.Controllers.Api
             existingClient.CityID = client.CityID;
             existingClient.WorkingExperience = client.WorkingExperience;
             existingClient.DateOfBirth = client.DateOfBirth;
+            existingClient.UpdatedById = _userManager.GetUserId(User);
 
             try
             {
@@ -149,6 +161,7 @@ namespace Vjezba.Controllers.Api
 
         // DELETE: api/client/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteClient(int id)
         {
             var client = await _context.Clients.FindAsync(id);
@@ -170,6 +183,7 @@ namespace Vjezba.Controllers.Api
 
         // method with IndexAjax name, that takes in a ClientFilterModel, and return a partial view
         [HttpPost("IndexAjax")]
+        [AllowAnonymous]
         public async Task<IActionResult> IndexAjax([FromBody] ClientFilterModel filter)
         {
             // Start with the base query

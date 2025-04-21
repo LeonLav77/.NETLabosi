@@ -1,73 +1,71 @@
 ﻿@model Vjezba.Model.Client
 
 @{
-	ViewData["Title"] = "Details";
+	ViewData["Title"] = "Detalji klijenta";
 }
 
-<h2>Details</h2>
-
-@if (Model != null)
-{
-	<ol class="breadcrumb">
-		<li><a asp-action="Index">Popis klijenata</a></li>
-		<li class="active">@Model.FullName</li>
+<div class="container mt-4">
+	<ol class="breadcrumb bg-light p-2 rounded">
+		<li class="breadcrumb-item">
+			<a asp-action="Index">Popis klijenata</a>
+		</li>
+		<li class="breadcrumb-item active">@Model?.FullName</li>
 	</ol>
 
-	<div>
-		<h4>Client</h4>
-		<hr />
-		<dl class="dl-horizontal">
-			<dt>
-				ID
-			</dt>
-			<dd>
-				@Html.DisplayFor(model => model.ID)
-			</dd>
-			<dt>
-				Ime i prezime
-			</dt>
-			<dd>
-				@Html.DisplayFor(model => model.FullName)
-			</dd>
-			<dt>
-				Email
-			</dt>
-			<dd>
-				@Html.DisplayFor(model => model.Email)
-			</dd>
-			<dt>
-				Spol
-			</dt>
-			<dd>
-				@Html.DisplayFor(model => model.Gender)
-			</dd>
-			<dt>
-				Adresa
-			</dt>
-			<dd>
-				@Html.DisplayFor(model => model.Address)
-			</dd>
-			<dt>
-				Tel.
-			</dt>
-			<dd>
-				@Html.DisplayFor(model => model.PhoneNumber)
-			</dd>
-			<dt>
-				Grad
-			</dt>
-			<dd>
-				@Model?.City?.Name
-			</dd>
-		</dl>
-	</div>
+	@if (Model != null)
+	{
+		<div class="card shadow-sm rounded">
+			<div class="card-header bg-primary text-white">
+				<h4 class="mb-0"><i class="bi bi-person-circle me-2"></i>Detalji klijenta</h4>
+			</div>
+			<div class="card-body">
+				<dl class="row">
+					<dt class="col-sm-3">ID</dt>
+					<dd class="col-sm-9">@Html.DisplayFor(model => model.ID)</dd>
 
-}
-else
-{
-	<div class="alert alert-danger">
-		Nije odabran ispravni ID klijenta.
-	</div>
+					<dt class="col-sm-3">Ime i Prezime</dt>
+					<dd class="col-sm-9">@Html.DisplayFor(model => model.FullName)</dd>
 
-}
+					<dt class="col-sm-3">Email</dt>
+					<dd class="col-sm-9">@Html.DisplayFor(model => model.Email)</dd>
+
+					<dt class="col-sm-3">Spol</dt>
+					<dd class="col-sm-9">@Html.DisplayFor(model => model.Gender)</dd>
+
+					<dt class="col-sm-3">Adresa</dt>
+					<dd class="col-sm-9">@Html.DisplayFor(model => model.Address)</dd>
+
+					<dt class="col-sm-3">Broj telefona</dt>
+					<dd class="col-sm-9">@Html.DisplayFor(model => model.PhoneNumber)</dd>
+
+					<dt class="col-sm-3">Grad</dt>
+					<dd class="col-sm-9">@Model?.City?.Name</dd>
+
+					<dt class="col-sm-3">Radno iskustvo (godine)</dt>
+					<dd class="col-sm-9">@Html.DisplayFor(model => model.WorkingExperience)</dd>
+
+					<dt class="col-sm-3">Datum rođenja</dt>
+					<dd class="col-sm-9">@Model?.DateOfBirth?.ToString("dd.MM.yyyy")</dd>
+
+					<dt class="col-sm-3">Kreirao</dt>
+					<dd class="col-sm-9">@Model?.CreatedById</dd>
+
+					<dt class="col-sm-3">Ažurirao</dt>
+					<dd class="col-sm-9">@Model?.UpdatedById</dd>
+				</dl>
+			</div>
+			<div class="card-footer text-end">
+				<a asp-action="Index" class="btn btn-outline-secondary">
+					<i class="bi bi-arrow-left-circle"></i> Natrag na popis
+				</a>
+			</div>
+		</div>
+	}
+	else
+	{
+		<div class="alert alert-danger mt-4">
+			<strong>Greška:</strong> Nije odabran ispravni ID klijenta.
+		</div>
+	}
+</div>
 

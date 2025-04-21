@@ -52,7 +52,6 @@ namespace Vjezba.Model
         [Display(Name = "Working Experience (years)")]
         public int? WorkingExperience { get; set; }
         
-        // New Date of Birth field - nullable because there are existing records
         [Display(Name = "Date of Birth")]
         [DataType(DataType.Date)]
         public DateTime? DateOfBirth { get; set; }
@@ -61,11 +60,17 @@ namespace Vjezba.Model
         [InverseProperty("Client")]
         public virtual ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
         
-        // Add Attachments collection
         [JsonIgnore]
         [InverseProperty("Client")]
         public virtual ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
         
+        [Display(Name = "Created By")]
+        public string? CreatedById { get; set; }
+
+        [Display(Name = "Updated By")]
+        public string? UpdatedById { get; set; }
+
+        // Concatenated FullName property
         public string FullName => $"{FirstName} {LastName}";
     }
 }

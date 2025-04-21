@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Vjezba.Model;
 
 namespace Vjezba.DAL
 {
-    public class ClientManagerDbContext : DbContext
+    public class ClientManagerDbContext : IdentityDbContext<AppUser>
     {
         protected ClientManagerDbContext() { }
         
@@ -22,7 +23,7 @@ namespace Vjezba.DAL
         {
             base.OnModelCreating(modelBuilder);
             
-            // Add seed data if needed
+            // Add seed data
             modelBuilder.Entity<City>().HasData(
                 new City { ID = 1, Name = "Zagreb" },
                 new City { ID = 2, Name = "Pula" },
@@ -40,7 +41,9 @@ namespace Vjezba.DAL
                     Address = "Ilica 1",
                     PhoneNumber = "0912345678",
                     CityID = 2,
-                    WorkingExperience = 5
+                    WorkingExperience = 5,
+                    
+                    // Not setting CreatedById and UpdatedById since they're now nullable
                 }
             );
         }

@@ -1,10 +1,10 @@
 @model List<Vjezba.Model.Client>
 
-<table class="table table-striped mt-3" id="tbl-clients">
+<table class="table table-striped mt-3">
     <thead>
         <tr>
             <th>ID</th>
-            <th>Client</th>
+            <th>Name</th>
             <th>Address</th>
             <th>Email</th>
             <th>City</th>
@@ -12,18 +12,32 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.OrderBy(c => c.ID))
+        @foreach (var client in Model)
         {
             <tr>
-                <td>@item.ID</td>
+                <td>@client.ID</td>
+                <td>@client.FullName</td>
+                <td>@client.Address</td>
+                <td>@client.Email</td>
+                <td>@client.City?.Name</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@item.ID">@item.FullName</a>
-                </td>
-                <td>@item.Address</td>
-                <td>@item.Email</td>
-                <td>@item.City?.Name</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-sm btn-primary">Edit</a>
+                    <div class="btn-group">
+                        <a asp-action="Details" asp-route-id="@client.ID" class="btn btn-info btn-sm">Details</a>
+                        
+                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@client.ID" class="btn btn-primary btn-sm">Edit</a>
+                        }
+                        
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <form asp-action="Delete" asp-route-id="@client.ID" method="post" 
+                                  onsubmit="return confirm('Are you sure you want to delete this client?');"
+                                  style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        }
+                    </div>
                 </td>
             </tr>
         }

@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Vjezba.Web/Controllers/ClientController.cs
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data.Common;
@@ -11,15 +14,17 @@ using Vjezba.Model.Helpers;
 
 namespace Vjezba.Web.Controllers
 {
-    public class ClientController : Controller
+    public class ClientController : BaseController
     {
         private readonly ClientManagerDbContext _context;
 
-        public ClientController(ClientManagerDbContext context)
+        public ClientController(ClientManagerDbContext context, UserManager<AppUser> userManager)
+            : base(userManager)
         {
             _context = context;
         }
 
+        [AllowAnonymous]
         public IActionResult Index()
         {
             // Load the base query with included related data
@@ -34,7 +39,7 @@ namespace Vjezba.Web.Controllers
             return View(clientsInMemory.OrderBy(c => c.ID).ToList());
         }
 
-
+        [AllowAnonymous]
         public IActionResult Details(int? id = null)
         {
             if (id == null)
@@ -50,6 +55,7 @@ namespace Vjezba.Web.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Create()
         {
             // Fill dropdown values
@@ -58,14 +64,20 @@ namespace Vjezba.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Create(Client client)
         {
             try 
             {
-                 if(!ModelState.IsValid){
+                if(!ModelState.IsValid){
                     FillDropDownValues();
                     return View(client);
-                 }
+                }
+                
+                // Set created by information
+                client.CreatedById = UserId;
+                client.UpdatedById = UserId;
+                
                 // Add client to database context
                 _context.Clients.Add(client);
                 
@@ -90,6 +102,7 @@ namespace Vjezba.Web.Controllers
             return View(client);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [ActionName("Edit")]
         public IActionResult EditGet(int id)
         {
@@ -104,14 +117,35 @@ namespace Vjezba.Web.Controllers
 
         [HttpPost]
         [ActionName("Edit")]
+        [Authorize(Roles = "Admin,Manager")]
         public ActionResult EditPost(int id)
         {
             Client client = _context.Clients.Find(id);
+            
+            if (client == null)
+                return NotFound();
 
             TryUpdateModelAsync(client);
             
+            // Update the UpdatedById field
+            client.UpdatedById = UserId;
+            
             _context.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public IActionResult Delete(int id)
+        {
+            var client = _context.Clients.Find(id);
+            if (client == null)
+                return NotFound();
+
+            _context.Clients.Remove(client);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // Add this method to your ClientController class
@@ -122,10 +156,9 @@ namespace Vjezba.Web.Controllers
             ViewBag.Cities = cities;
         }
 
-
-
-          // POST: Client/UploadAttachment
+        // POST: Client/UploadAttachment
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> UploadAttachment(int clientId, IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -173,6 +206,7 @@ namespace Vjezba.Web.Controllers
 
         // GET: Client/GetAttachments
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAttachments(int clientId)
         {
             try
@@ -192,6 +226,7 @@ namespace Vjezba.Web.Controllers
 
         // POST: Client/DeleteAttachment
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> DeleteAttachment(int id)
         {
             try
@@ -217,6 +252,45 @@ namespace Vjezba.Web.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> IndexAjax([FromBody] ClientFilterModel filter)
+        {
+            // Start with the base query
+            IQueryable<Client> query = _context.Clients.Include(c => c.City);
+
+            // Apply filters after loading the data into memory to avoid translation issues
+            // First retrieve all the data
+            List<Client> clients = await query.ToListAsync();
+            
+            // Then filter in memory
+            if (!string.IsNullOrWhiteSpace(filter.FullName))
+            {
+                clients = clients.Where(c => c.FullName != null && 
+                    c.FullName.Contains(filter.FullName, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.Address))
+            {
+                clients = clients.Where(c => c.Address != null && 
+                    c.Address.Contains(filter.Address, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.Email))
+            {
+                clients = clients.Where(c => c.Email != null && 
+                    c.Email.Contains(filter.Email, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.City))
+            {
+                clients = clients.Where(c => c.City != null && c.City.Name != null && 
+                    c.City.Name.Contains(filter.City, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            return PartialView("~/Views/Client/_IndexTable.cshtml", clients);
         }
     }
 }
